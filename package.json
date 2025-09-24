@@ -1,0 +1,86 @@
+{
+  "name": "todo-links",
+  "displayName": "TODO Links",
+  "description": "Extract TODO comments from source code and export to various formats",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "todo-links.extractTodos",
+        "title": "Extract TODOs",
+        "category": "TODO Links"
+      },
+      {
+        "command": "todo-links.exportToTxt",
+        "title": "Export TODOs to TXT",
+        "category": "TODO Links"
+      },
+      {
+        "command": "todo-links.sendToNotion",
+        "title": "Send TODOs to Notion",
+        "category": "TODO Links"
+      },
+      {
+        "command": "todo-links.sendToSlack",
+        "title": "Send TODOs to Slack",
+        "category": "TODO Links"
+      }
+    ],
+    "configuration": {
+      "title": "TODO Links",
+      "properties": {
+        "todoLinks.notionApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Notion API key for sending TODOs to Notion"
+        },
+        "todoLinks.notionDatabaseId": {
+          "type": "string",
+          "default": "",
+          "description": "Notion database ID for storing TODOs"
+        },
+        "todoLinks.slackWebhookUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Slack webhook URL for sending TODOs"
+        },
+        "todoLinks.includeFileTypes": {
+          "type": "array",
+          "default": ["*.js", "*.ts", "*.jsx", "*.tsx", "*.py", "*.java", "*.cpp", "*.c", "*.cs", "*.php", "*.rb", "*.go", "*.rs", "*.swift", "*.kt", "*.scala", "*.vue", "*.svelte"],
+          "description": "File types to include when scanning for TODOs"
+        },
+        "todoLinks.excludeFolders": {
+          "type": "array",
+          "default": ["node_modules", ".git", "dist", "build", "out", ".vscode", "coverage", ".nyc_output", "logs", "tmp", "temp", "todotest"],
+          "description": "Folders to exclude when scanning for TODOs"
+        },
+        "todoLinks.excludePatterns": {
+          "type": "array",
+          "default": ["**/node_modules/**", "**/.git/**", "**/dist/**", "**/build/**", "**/out/**", "**/.vscode/**", "**/coverage/**", "**/.nyc_output/**", "**/logs/**", "**/tmp/**", "**/temp/**", "**/todotest/**"],
+          "description": "Glob patterns to exclude when scanning for TODOs"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.3",
+    "axios": "^1.6.0"
+  }
+}

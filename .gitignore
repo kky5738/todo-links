@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Packaged extensions
+*.vsix
+
+# Test artifacts
+.vscode-test/
+coverage/
+.nyc_output/
+
+# Editor/OS
+.vscode/
+.history/
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Temp
+tmp/
+temp/
+
+# Tool exports (optional)
+todos.txt
+todos.json
+todos.csv
+
+
