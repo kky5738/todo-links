@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
   // 설정 가져오기
   const config = vscode.workspace.getConfiguration('todoLinks');
   const extractorConfig: TodoExtractorConfig = {
-    includeFileTypes: config.get('includeFileTypes', ['*.js', '*.ts', '*.jsx', '*.tsx', '*.py', '*.java', '*.cpp', '*.c', '*.cs', '*.php', '*.rb', '*.go', '*.rs', '*.swift', '*.kt', '*.scala', '*.vue', '*.svelte']),
+    includeFileTypes: config.get('includeFileTypes', ['*.js', '*.ts', '*.jsx', '*.tsx', '*.py', '*.java', '*.cpp', '*.c', '*.cs', '*.php', '*.rb', '*.go', '*.rs', '*.swift', '*.kt', '*.scala', '*.vue', '*.svelte', "*.html"]),
     excludeFolders: config.get('excludeFolders', ['node_modules', '.git', 'dist', 'build', 'out', '.vscode', 'coverage', '.nyc_output', 'logs', 'tmp', 'temp', 'todotest']),
     excludePatterns: config.get('excludePatterns', ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/out/**', '**/.vscode/**', '**/coverage/**', '**/.nyc_output/**', '**/logs/**', '**/tmp/**', '**/temp/**', '**/todotest/**']),
     notionApiKey: config.get('notionApiKey'),
