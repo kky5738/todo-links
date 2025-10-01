@@ -142,12 +142,12 @@ export class TodoExtractor {
    * 라인에서 TODO 주석을 찾고 파싱합니다.
    */
   private findTodoInLine(line: string): { content: string; priority?: 'high' | 'medium' | 'low'; assignee?: string; tags?: string[] } | null {
-    // 다양한 주석 패턴을 지원
+    // 다양한 주석 패턴을 지원 (인덴테이션 고려)
     const commentPatterns = [
-      /\/\/\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING):\s*(.+)/i,
-      /\/\*\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING):\s*(.+?)(?:\*\/|$)/i,
-      /#\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING):\s*(.+)/i,
-      /<!--\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING):\s*(.+?)(?:-->|$)/i
+      /^\s*\/\/\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING)\s*:?\s*(.+)/i,  // JavaScript/TypeScript 주석
+      /^\s*\/\*\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING)\s*:?\s*(.+?)(?:\*\/|$)/i,  // 멀티라인 주석
+      /^\s*#\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING)\s*:?\s*(.+)/i,  // Python/Shell 주석
+      /^\s*<!--\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING)\s*:?\s*(.+?)(?:-->|$)/i  // HTML 주석
     ];
 
     for (const pattern of commentPatterns) {
@@ -156,24 +156,38 @@ export class TodoExtractor {
         const type = match[1].toUpperCase();
         const content = match[2].trim();
         
-        // 우선순위 파싱 (HIGH, MEDIUM, LOW)
-        const priorityMatch = content.match(/(HIGH|MEDIUM|LOW|H|M|L)\s*[:\-]?\s*/i);
+        // 우선순위 파싱 (HIGH, MEDIUM, LOW) - 더 정확한 매칭
+        const priorityMatch = content.match(/\b(HIGH|MEDIUM|LOW|H|M|L)\b\s*[:\-]?\s*/i);
         const priority = priorityMatch ? this.normalizePriority(priorityMatch[1]) : undefined;
         
-        // 담당자 파싱 (@username)
-        const assigneeMatch = content.match(/@(\w+)/);
-        const assignee = assigneeMatch ? assigneeMatch[1] : undefined;
+        // 담당자 파싱 (@username) - 더 정확한 매칭
+        const assigneeMatches = content.match(/@(\w+)/g);
+        const assignee = assigneeMatches ? assigneeMatches[0].substring(1) : undefined;
         
-        // 태그 파싱 (#tag)
+        // 태그 파싱 (#tag) - 모든 태그 수집
         const tagMatches = content.match(/#(\w+)/g);
         const tags = tagMatches ? tagMatches.map(tag => tag.substring(1)) : undefined;
         
-        // 내용에서 메타데이터 제거
-        const cleanContent = content
-          .replace(/(HIGH|MEDIUM|LOW|H|M|L)\s*[:\-]?\s*/i, '')
-          .replace(/@\w+/g, '')
-          .replace(/#\w+/g, '')
-          .trim();
+        // 내용에서 메타데이터 제거 (순서대로 제거)
+        let cleanContent = content;
+        
+        // 우선순위 제거
+        if (priorityMatch) {
+          cleanContent = cleanContent.replace(/\b(HIGH|MEDIUM|LOW|H|M|L)\b\s*[:\-]?\s*/i, '');
+        }
+        
+        // 담당자 제거
+        if (assigneeMatches) {
+          cleanContent = cleanContent.replace(/@\w+/g, '');
+        }
+        
+        // 태그 제거
+        if (tagMatches) {
+          cleanContent = cleanContent.replace(/#\w+/g, '');
+        }
+        
+        // 연속된 공백 정리 및 콜론 정리
+        cleanContent = cleanContent.replace(/\s+/g, ' ').replace(/^\s*:\s*/, '').trim();
 
         return {
           content: `[${type}] ${cleanContent}`,

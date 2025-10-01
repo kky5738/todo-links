@@ -23,6 +23,16 @@
         "category": "TODO Links"
       },
       {
+        "command": "todo-links.exportToJson",
+        "title": "Export TODOs to JSON",
+        "category": "TODO Links"
+      },
+      {
+        "command": "todo-links.exportToCsv",
+        "title": "Export TODOs to CSV",
+        "category": "TODO Links"
+      },
+      {
         "command": "todo-links.sendToNotion",
         "title": "Send TODOs to Notion",
         "category": "TODO Links"
@@ -53,7 +63,7 @@
         },
         "todoLinks.includeFileTypes": {
           "type": "array",
-          "default": ["*.js", "*.ts", "*.jsx", "*.tsx", "*.py", "*.java", "*.cpp", "*.c", "*.cs", "*.php", "*.rb", "*.go", "*.rs", "*.swift", "*.kt", "*.scala", "*.vue", "*.svelte"],
+          "default": ["*.js", "*.ts", "*.jsx", "*.tsx", "*.py", "*.java", "*.cpp", "*.c", "*.cs", "*.php", "*.rb", "*.go", "*.rs", "*.swift", "*.kt", "*.scala", "*.vue", "*.svelte", "*.html"],
           "description": "File types to include when scanning for TODOs"
         },
         "todoLinks.excludeFolders": {
