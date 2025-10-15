@@ -5,6 +5,18 @@ import { NotionService } from './notionService';
 import { SlackService } from './slackService';
 import { TodoExtractorConfig } from './types';
 
+
+/**
+ * 쉼표로 구분된 키워드 문자열을 배열로 변환합니다.
+ */
+function parseKeywords(keywordsString: string): string[] {
+  return keywordsString
+    .split(',')
+    .map(keyword => keyword.trim())
+    .filter(keyword => keyword.length > 0);
+}
+
+
 export function activate(context: vscode.ExtensionContext) {
   console.log('TODO Extractor 확장이 활성화되었습니다.');
 
@@ -14,6 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
     includeFileTypes: config.get('includeFileTypes', ['*.js', '*.ts', '*.jsx', '*.tsx', '*.py', '*.java', '*.cpp', '*.c', '*.cs', '*.php', '*.rb', '*.go', '*.rs', '*.swift', '*.kt', '*.scala', '*.vue', '*.svelte', "*.html"]),
     excludeFolders: config.get('excludeFolders', ['node_modules', '.git', 'dist', 'build', 'out', '.vscode', 'coverage', '.nyc_output', 'logs', 'tmp', 'temp', 'todotest']),
     excludePatterns: config.get('excludePatterns', ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/out/**', '**/.vscode/**', '**/coverage/**', '**/.nyc_output/**', '**/logs/**', '**/tmp/**', '**/temp/**', '**/todotest/**']),
+    customKeywords: config.get('customKeywords', 'TODO, FIXME, HACK, NOTE, BUG, WARNING'),
     notionApiKey: config.get('notionApiKey'),
     notionDatabaseId: config.get('notionDatabaseId'),
     slackWebhookUrl: config.get('slackWebhookUrl'),
@@ -201,6 +214,11 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
+  // 설정창 열기 명령어
+  const openSettingsCommand = vscode.commands.registerCommand('todo-links.openSettings', () => {
+    vscode.commands.executeCommand('workbench.action.openSettings', 'todoLinks');
+  });
+
   // 설정 변경 감지
   const configChangeListener = vscode.workspace.onDidChangeConfiguration(event => {
     if (event.affectsConfiguration('todoLinks')) {
@@ -209,6 +227,7 @@ export function activate(context: vscode.ExtensionContext) {
         includeFileTypes: config.get('includeFileTypes', ['*.js', '*.ts', '*.jsx', '*.tsx', '*.py', '*.java', '*.cpp', '*.c', '*.cs', '*.php', '*.rb', '*.go', '*.rs', '*.swift', '*.kt', '*.scala', '*.vue', '*.svelte']),
         excludeFolders: config.get('excludeFolders', ['node_modules', '.git', 'dist', 'build', 'out', '.vscode', 'coverage', '.nyc_output', 'logs', 'tmp', 'temp', 'todotest']),
         excludePatterns: config.get('excludePatterns', ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/out/**', '**/.vscode/**', '**/coverage/**', '**/.nyc_output/**', '**/logs/**', '**/tmp/**', '**/temp/**', '**/todotest/**']),
+        customKeywords: config.get('customKeywords', 'TODO, FIXME, HACK, NOTE, BUG, WARNING'),
         notionApiKey: config.get('notionApiKey'),
         notionDatabaseId: config.get('notionDatabaseId'),
         slackWebhookUrl: config.get('slackWebhookUrl'),
@@ -231,6 +250,7 @@ export function activate(context: vscode.ExtensionContext) {
     exportCsvCommand,
     sendToNotionCommand,
     sendToSlackCommand,
+    openSettingsCommand,
     configChangeListener
   );
 }

@@ -41,6 +41,11 @@
         "command": "todo-links.sendToSlack",
         "title": "Send TODOs to Slack",
         "category": "TODO Links"
+      },
+      {
+        "command": "todo-links.openSettings",
+        "title": "Open Settings",
+        "category": "TODO Links"
       }
     ],
     "configuration": {
