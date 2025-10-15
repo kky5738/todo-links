@@ -14,6 +14,8 @@ export interface TodoExtractorConfig {
   notionApiKey?: string;
   notionDatabaseId?: string;
   slackWebhookUrl?: string;
+  assigneePatterns: string;
+  tagPatterns: string;
 }
 
 export interface ExportOptions {

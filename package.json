@@ -75,6 +75,21 @@
           "type": "array",
           "default": ["**/node_modules/**", "**/.git/**", "**/dist/**", "**/build/**", "**/out/**", "**/.vscode/**", "**/coverage/**", "**/.nyc_output/**", "**/logs/**", "**/tmp/**", "**/temp/**", "**/todotest/**"],
           "description": "Glob patterns to exclude when scanning for TODOs"
+        },
+        "todoLinks.customKeywords": {
+          "type": "string",
+          "default": "TODO, FIXME, HACK, NOTE, BUG, WARNING",
+          "description": "Custom keywords to search for in comments (comma-separated, e.g., 'TODO, FIXME, REVIEW, CHECK')"
+        },
+        "todoLinks.assigneePatterns": {
+          "type": "string",
+          "default": "@",
+          "description": "Patterns to identify assignees when scanning for TODOs"
+        },
+        "todoLinks.tagPatterns": {
+          "type": "string",
+          "default": "#",
+          "description": "Patterns to identify tags when scanning for TODOs"
         }
       }
     }
