@@ -13,6 +13,7 @@ export interface TodoExtractorConfig {
   excludePatterns: string[];
   notionApiKey?: string;
   notionDatabaseId?: string;
+  customKeywords: string;
   slackWebhookUrl?: string;
   assigneePatterns: string;
   tagPatterns: string;

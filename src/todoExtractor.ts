@@ -146,12 +146,21 @@ export class TodoExtractor {
    * 라인에서 TODO 주석을 찾고 파싱합니다.
    */
   private findTodoInLine(line: string): { content: string; priority?: 'high' | 'medium' | 'low'; assignee?: string; tags?: string[] } | null {
+        // 사용자 정의 키워드 문자열을 배열로 파싱
+        const keywordsArray = this.config.customKeywords
+        .split(',')
+        .map(keyword => keyword.trim())
+        .filter(keyword => keyword.length > 0);
+      
+      // 사용자 정의 키워드들을 정규식 패턴으로 변환
+      const keywordsPattern = keywordsArray.join('|');
+      
     // 다양한 주석 패턴을 지원 (인덴테이션 고려)
     const commentPatterns = [
-      /^\s*\/\/\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING)\s*:?\s*(.+)/i,  // JavaScript/TypeScript 주석
-      /^\s*\/\*\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING)\s*:?\s*(.+?)(?:\*\/|$)/i,  // 멀티라인 주석
-      /^\s*#\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING)\s*:?\s*(.+)/i,  // Python/Shell 주석
-      /^\s*<!--\s*(TODO|FIXME|HACK|NOTE|BUG|WARNING)\s*:?\s*(.+?)(?:-->|$)/i  // HTML 주석
+      new RegExp(`^\\s*//\\s*(${keywordsPattern})\\s*:?\\s*(.+)`, 'i'),  // JavaScript/TypeScript 주석
+      new RegExp(`^\\s*/\\*\\s*(${keywordsPattern})\\s*:?\\s*(.+?)(?:\\*/|$)`, 'i'),  // 멀티라인 주석
+      new RegExp(`^\\s*#\\s*(${keywordsPattern})\\s*:?\\s*(.+)`, 'i'),  // Python/Shell 주석
+      new RegExp(`^\\s*<!--\\s*(${keywordsPattern})\\s*:?\\s*(.+?)(?:-->|$)`, 'i')  // HTML 주석
     ];
 
     for (const pattern of commentPatterns) {
