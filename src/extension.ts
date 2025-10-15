@@ -16,7 +16,9 @@ export function activate(context: vscode.ExtensionContext) {
     excludePatterns: config.get('excludePatterns', ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/out/**', '**/.vscode/**', '**/coverage/**', '**/.nyc_output/**', '**/logs/**', '**/tmp/**', '**/temp/**', '**/todotest/**']),
     notionApiKey: config.get('notionApiKey'),
     notionDatabaseId: config.get('notionDatabaseId'),
-    slackWebhookUrl: config.get('slackWebhookUrl')
+    slackWebhookUrl: config.get('slackWebhookUrl'),
+    assigneePatterns: config.get('assigneePatterns', '@'),
+    tagPatterns: config.get('tagPatterns', '#')
   };
 
   const todoExtractor = new TodoExtractor(extractorConfig);
@@ -209,7 +211,9 @@ export function activate(context: vscode.ExtensionContext) {
         excludePatterns: config.get('excludePatterns', ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/out/**', '**/.vscode/**', '**/coverage/**', '**/.nyc_output/**', '**/logs/**', '**/tmp/**', '**/temp/**', '**/todotest/**']),
         notionApiKey: config.get('notionApiKey'),
         notionDatabaseId: config.get('notionDatabaseId'),
-        slackWebhookUrl: config.get('slackWebhookUrl')
+        slackWebhookUrl: config.get('slackWebhookUrl'),
+        assigneePatterns: config.get('assigneePatterns', '@'),
+        tagPatterns: config.get('tagPatterns', '#')
       };
       
       // 새로운 설정으로 업데이트

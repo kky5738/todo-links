@@ -5,10 +5,14 @@ import { TodoItem, TodoExtractorConfig } from './types';
 
 export class TodoExtractor {
   private config: TodoExtractorConfig;
+  private assigneePatterns: string;
+  private tagPatterns: string;
 
   constructor(config: TodoExtractorConfig) {
     this.config = config;
-  }
+    this.assigneePatterns = config.assigneePatterns;
+    this.tagPatterns = config.tagPatterns;
+  } 
 
   /**
    * 프로젝트에서 TODO 주석을 추출합니다.
