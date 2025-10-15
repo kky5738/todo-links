@@ -11,6 +11,7 @@ export interface TodoExtractorConfig {
   includeFileTypes: string[];
   excludeFolders: string[];
   excludePatterns: string[];
+  customKeywords: string;
   notionApiKey?: string;
   notionDatabaseId?: string;
   slackWebhookUrl?: string;

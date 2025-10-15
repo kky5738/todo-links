@@ -41,6 +41,11 @@
         "command": "todo-links.sendToSlack",
         "title": "Send TODOs to Slack",
         "category": "TODO Links"
+      },
+      {
+        "command": "todo-links.openSettings",
+        "title": "Open Settings",
+        "category": "TODO Links"
       }
     ],
     "configuration": {
@@ -75,6 +80,11 @@
           "type": "array",
           "default": ["**/node_modules/**", "**/.git/**", "**/dist/**", "**/build/**", "**/out/**", "**/.vscode/**", "**/coverage/**", "**/.nyc_output/**", "**/logs/**", "**/tmp/**", "**/temp/**", "**/todotest/**"],
           "description": "Glob patterns to exclude when scanning for TODOs"
+        },
+        "todoLinks.customKeywords": {
+          "type": "string",
+          "default": "TODO, FIXME, HACK, NOTE, BUG, WARNING",
+          "description": "Custom keywords to search for in comments (comma-separated, e.g., 'TODO, FIXME, REVIEW, CHECK')"
         }
       }
     }
