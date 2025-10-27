@@ -146,7 +146,9 @@
     }
   },
   "scripts": {
-    "test": "vscode-test",
+    "test": "vscode-test --label unitTests --label integrationTests",
+    "test:unit": "vscode-test --label unitTests",
+    "test:integration": "vscode-test --label integrationTests",
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./"
