@@ -168,6 +168,7 @@
   },
   "dependencies": {
     "@notionhq/client": "^2.2.3",
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "p-limit": "^3.1.0"
   }
 }

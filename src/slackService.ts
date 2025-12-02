@@ -33,22 +33,25 @@ export class SlackService {
     }
 
     try {
-      const message = this.formatSlackMessage(todos);
+      const messageChunks = this.formatSlackMessage(todos);
       
-      const response = await axios.post(this.webhookUrl, {
-        text: '📋 TODO 목록',
-        blocks: message
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      for (const chunk of messageChunks) {
+        const response = await axios.post(this.webhookUrl, {
+          text: '📋 TODO 목록',
+          blocks: chunk
+        }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
 
-      if (response.status === 200) {
-        vscode.window.showInformationMessage(`${todos.length}개의 TODO가 Slack에 전송되었습니다.`);
-      } else {
-        vscode.window.showErrorMessage('Slack 전송에 실패했습니다.');
+        if (response.status !== 200) {
+          vscode.window.showErrorMessage('Slack 전송에 실패했습니다.');
+          return;
+        }
       }
+
+      vscode.window.showInformationMessage(`${todos.length}개의 TODO가 Slack에 전송되었습니다.`);
     } catch (error) {
       vscode.window.showErrorMessage(`Slack 전송 오류: ${error}`);
     }
@@ -57,26 +60,36 @@ export class SlackService {
   /**
    * TODO 목록을 Slack 메시지 형식으로 포맷합니다.
    */
-  private formatSlackMessage(todos: TodoItem[]): any[] {
-    const blocks: any[] = [
-      {
-        type: 'header',
-        text: {
-          type: 'plain_text',
-          text: `📋 TODO 목록 (${todos.length}개)`
-        }
-      },
-      {
-        type: 'divider'
+  private formatSlackMessage(todos: TodoItem[]): any[][] {
+    const chunks: any[][] = [];
+    let currentBlocks: any[] = [];
+    
+    const addBlock = (block: any) => {
+      if (currentBlocks.length >= 45) { // Slack block limit is 50, keeping safety margin
+        chunks.push(currentBlocks);
+        currentBlocks = [];
       }
-    ];
+      currentBlocks.push(block);
+    };
+
+    addBlock({
+      type: 'header',
+      text: {
+        type: 'plain_text',
+        text: `📋 TODO 목록 (${todos.length}개)`
+      }
+    });
+    
+    addBlock({
+      type: 'divider'
+    });
 
     // 파일별로 그룹화
     const todosByFile = this.groupTodosByFile(todos);
     
     for (const [filePath, fileTodos] of todosByFile) {
       // 파일 헤더
-      blocks.push({
+      addBlock({
         type: 'section',
         text: {
           type: 'mrkdwn',
@@ -90,7 +103,7 @@ export class SlackService {
         const assignee = todo.assignee ? ` @${todo.assignee}` : '';
         const tags = todo.tags ? ` ${todo.tags.map(tag => `#${tag}`).join(' ')}` : '';
         
-        blocks.push({
+        addBlock({
           type: 'section',
           text: {
             type: 'mrkdwn',
@@ -101,14 +114,14 @@ export class SlackService {
 
       // 파일 구분선
       if (todosByFile.size > 1) {
-        blocks.push({
+        addBlock({
           type: 'divider'
         });
       }
     }
 
     // 요약 정보
-    blocks.push({
+    addBlock({
       type: 'context',
       elements: [
         {
@@ -118,7 +131,11 @@ export class SlackService {
       ]
     });
 
-    return blocks;
+    if (currentBlocks.length > 0) {
+      chunks.push(currentBlocks);
+    }
+
+    return chunks;
   }
 
   /**
