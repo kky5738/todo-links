@@ -1,5 +1,6 @@
 import { Client } from '@notionhq/client';
 import * as vscode from 'vscode';
+import pLimit from 'p-limit';
 import { TodoItem } from './types';
 
 export class NotionService {
@@ -46,7 +47,8 @@ export class NotionService {
         let completed = 0;
         const total = todos.length;
 
-        for (const todo of todos) {
+        const limit = pLimit(3); // Concurrency limit
+        const promises = todos.map(todo => limit(async () => {
           try {
             await this.createNotionPage(todo);
             completed++;
@@ -54,7 +56,9 @@ export class NotionService {
           } catch (error) {
             console.error(`Notion 페이지 생성 오류 (${todo.filePath}:${todo.lineNumber}):`, error);
           }
-        }
+        }));
+
+        await Promise.all(promises);
       });
 
       await progress;

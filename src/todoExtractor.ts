@@ -1,17 +1,46 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import pLimit from 'p-limit';
 import { TodoItem, TodoExtractorConfig } from './types';
 
 export class TodoExtractor {
   private config: TodoExtractorConfig;
   private assigneePatterns: string;
   private tagPatterns: string;
+  private excludeRegexes: RegExp[] = [];
+  private commentPatterns: RegExp[] = [];
 
   constructor(config: TodoExtractorConfig) {
     this.config = config;
     this.assigneePatterns = config.assigneePatterns;
     this.tagPatterns = config.tagPatterns;
+    this.initializeRegexes();
+  }
+
+  private initializeRegexes() {
+    // Exclude patterns
+    this.excludeRegexes = this.config.excludePatterns.map(pattern => {
+      const regexPattern = pattern
+        .replace(/\*\*/g, '.*')
+        .replace(/\*/g, '[^/]*')
+        .replace(/\?/g, '[^/]');
+      return new RegExp(`^${regexPattern}$`);
+    });
+
+    // Comment patterns
+    const keywordsArray = this.config.customKeywords
+      .split(',')
+      .map(keyword => keyword.trim())
+      .filter(keyword => keyword.length > 0);
+    const keywordsPattern = keywordsArray.join('|');
+
+    this.commentPatterns = [
+      new RegExp(`^\\s*//\\s*(${keywordsPattern})\\s*:?\\s*(.+)`, 'i'),
+      new RegExp(`^\\s*/\\*\\s*(${keywordsPattern})\\s*:?\\s*(.+?)(?:\\*/|$)`, 'i'),
+      new RegExp(`^\\s*#\\s*(${keywordsPattern})\\s*:?\\s*(.+)`, 'i'),
+      new RegExp(`^\\s*<!--\\s*(${keywordsPattern})\\s*:?\\s*(.+?)(?:-->|$)`, 'i')
+    ];
   } 
 
   /**
@@ -28,10 +57,11 @@ export class TodoExtractor {
 
     const files = await this.getSourceFiles(workspaceFolder.uri.fsPath);
     
-    for (const file of files) {
-      const fileTodos = await this.extractTodosFromFile(file);
-      todos.push(...fileTodos);
-    }
+    const limit = pLimit(10); // Concurrency limit
+    const promises = files.map(file => limit(() => this.extractTodosFromFile(file)));
+    const results = await Promise.all(promises);
+    
+    todos.push(...results.flat());
 
     return todos;
   }
@@ -84,16 +114,7 @@ export class TodoExtractor {
     const relativePath = path.relative(vscode.workspace.workspaceFolders![0].uri.fsPath, fullPath);
     const normalizedPath = relativePath.replace(/\\/g, '/'); // Windows 경로를 Unix 스타일로 변환
     
-    return this.config.excludePatterns.some(pattern => {
-      // 간단한 glob 패턴 매칭 (정규식으로 변환)
-      const regexPattern = pattern
-        .replace(/\*\*/g, '.*')  // ** -> .*
-        .replace(/\*/g, '[^/]*') // * -> [^/]*
-        .replace(/\?/g, '[^/]'); // ? -> [^/]
-      
-      const regex = new RegExp(`^${regexPattern}$`);
-      return regex.test(normalizedPath);
-    });
+    return this.excludeRegexes.some(regex => regex.test(normalizedPath));
   }
 
   /**
@@ -146,24 +167,8 @@ export class TodoExtractor {
    * 라인에서 TODO 주석을 찾고 파싱합니다.
    */
   private findTodoInLine(line: string): { content: string; priority?: 'high' | 'medium' | 'low'; assignee?: string; tags?: string[] } | null {
-        // 사용자 정의 키워드 문자열을 배열로 파싱
-        const keywordsArray = this.config.customKeywords
-        .split(',')
-        .map(keyword => keyword.trim())
-        .filter(keyword => keyword.length > 0);
-      
-      // 사용자 정의 키워드들을 정규식 패턴으로 변환
-      const keywordsPattern = keywordsArray.join('|');
-      
-    // 다양한 주석 패턴을 지원 (인덴테이션 고려)
-    const commentPatterns = [
-      new RegExp(`^\\s*//\\s*(${keywordsPattern})\\s*:?\\s*(.+)`, 'i'),  // JavaScript/TypeScript 주석
-      new RegExp(`^\\s*/\\*\\s*(${keywordsPattern})\\s*:?\\s*(.+?)(?:\\*/|$)`, 'i'),  // 멀티라인 주석
-      new RegExp(`^\\s*#\\s*(${keywordsPattern})\\s*:?\\s*(.+)`, 'i'),  // Python/Shell 주석
-      new RegExp(`^\\s*<!--\\s*(${keywordsPattern})\\s*:?\\s*(.+?)(?:-->|$)`, 'i')  // HTML 주석
-    ];
-
-    for (const pattern of commentPatterns) {
+    // 미리 컴파일된 정규식 패턴 사용
+    for (const pattern of this.commentPatterns) {
       const match = line.match(pattern);
       if (match) {
         const type = match[1].toUpperCase();
