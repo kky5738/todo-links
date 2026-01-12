@@ -37,7 +37,7 @@ describe('TodoExtractor Tests', () => {
         assigneePatterns: '@',
         tagPatterns: '#'
       };
-      
+
       const extractor2 = new TodoExtractor(defaultConfig);
       expect(extractor2).to.exist;
     });
@@ -53,10 +53,10 @@ describe('TodoExtractor Tests', () => {
     it('기본 설정값이 올바른지 확인', () => {
       expect(config.excludeFolders).to.be.an('array');
       expect(config.excludeFolders.length).to.be.greaterThan(0);
-      
+
       expect(config.excludePatterns).to.be.an('array');
       expect(config.excludePatterns.length).to.be.greaterThan(0);
-      
+
       expect(config.customKeywords).to.be.a('string');
     });
   });
@@ -77,6 +77,58 @@ describe('TodoExtractor Tests', () => {
 
     it('excludeFolders는 배열이어야 함', () => {
       expect(config.excludeFolders).to.be.an('array');
+    });
+  });
+
+  describe('라인 파싱', () => {
+    it('기본 키워드를 파싱할 수 있어야 함', () => {
+      const line = '// TODO: 이것은 테스트입니다';
+      const result = (extractor as any).findTodoInLine(line);
+
+      expect(result).to.not.be.null;
+      expect(result.content).to.include('[TODO] 이것은 테스트입니다');
+    });
+
+    it('우선순위를 파싱할 수 있어야 함 (HIGH)', () => {
+      const line = '// TODO: HIGH: 높은 우선순위 작업';
+      const result = (extractor as any).findTodoInLine(line);
+
+      expect(result).to.not.be.null;
+      expect(result.priority).to.equal('high');
+      expect(result.content).to.include('높은 우선순위 작업');
+      expect(result.content).to.not.include('HIGH');
+    });
+
+    it('담당자를 파싱할 수 있어야 함 (@user)', () => {
+      const line = '// FIXME: @gboho 버그 수정 필요';
+      const result = (extractor as any).findTodoInLine(line);
+
+      expect(result).to.not.be.null;
+      expect(result.assignee).to.equal('gboho');
+      expect(result.content).to.include('버그 수정 필요');
+      expect(result.content).to.not.include('@gboho');
+    });
+
+    it('태그를 파싱할 수 있어야 함 (#tag)', () => {
+      const line = '// NOTE: API 변경 사항 #api #v2';
+      const result = (extractor as any).findTodoInLine(line);
+
+      expect(result).to.not.be.null;
+      expect(result.tags).to.deep.equal(['api', 'v2']);
+      expect(result.content).to.include('API 변경 사항');
+      expect(result.content).to.not.include('#api');
+      expect(result.content).to.not.include('#v2');
+    });
+
+    it('복합적인 메타데이터를 모두 파싱할 수 있어야 함', () => {
+      const line = '// TODO: HIGH: @manager #urgent 급한 작업입니다';
+      const result = (extractor as any).findTodoInLine(line);
+
+      expect(result).to.not.be.null;
+      expect(result.priority).to.equal('high');
+      expect(result.assignee).to.equal('manager');
+      expect(result.tags).to.deep.equal(['urgent']);
+      expect(result.content).to.include('급한 작업입니다');
     });
   });
 });
